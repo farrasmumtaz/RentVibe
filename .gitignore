@@ -1,0 +1,14 @@
+.env
+
+# Go
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE
+.vscode/
+
+# Logs
+*.log
