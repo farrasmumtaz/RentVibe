@@ -9,6 +9,9 @@ type Repository interface {
 	Create(category *models.Category) error
 	FindAll(search string, page int, limit int) ([]models.Category, int64, error)
 	FindByID(id uint) (*models.Category, error)
+
+	Update(category *models.Category) error
+	Patch(category *models.Category) error
 }
 
 type repository struct{}
@@ -63,4 +66,12 @@ func (r *repository) FindByID(id uint) (*models.Category, error) {
 	}
 
 	return &category, nil
+}
+
+func (r *repository) Update(category *models.Category) error {
+	return config.DB.Save(category).Error
+}
+
+func (r *repository) Patch(category *models.Category) error {
+	return config.DB.Save(category).Error
 }

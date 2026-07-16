@@ -132,3 +132,89 @@ func (h *Handler) FindByID(ctx *gin.Context) {
 		result,
 	)
 }
+
+func (h *Handler) Update(ctx *gin.Context) {
+
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		response.Error(ctx, http.StatusBadRequest, "Invalid category id")
+		return
+	}
+
+	var req UpdateCategoryRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.Error(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	category, err := h.service.Update(uint(id), req)
+	if err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.Error(ctx, http.StatusNotFound, "Category not found")
+			return
+		}
+
+		response.Error(ctx, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	result := dto.CategoryResponse{
+		ID:          category.ID,
+		Name:        category.Name,
+		Description: category.Description,
+		CreatedAt:   category.CreatedAt,
+		UpdatedAt:   category.UpdatedAt,
+	}
+
+	response.Success(
+		ctx,
+		http.StatusOK,
+		"Category updated successfully",
+		result,
+	)
+}
+
+func (h *Handler) Patch(ctx *gin.Context) {
+
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		response.Error(ctx, http.StatusBadRequest, "Invalid category id")
+		return
+	}
+
+	var req PatchCategoryRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.Error(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	category, err := h.service.Patch(uint(id), req)
+	if err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.Error(ctx, http.StatusNotFound, "Category not found")
+			return
+		}
+
+		response.Error(ctx, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	result := dto.CategoryResponse{
+		ID:          category.ID,
+		Name:        category.Name,
+		Description: category.Description,
+		CreatedAt:   category.CreatedAt,
+		UpdatedAt:   category.UpdatedAt,
+	}
+
+	response.Success(
+		ctx,
+		http.StatusOK,
+		"Category patched successfully",
+		result,
+	)
+}
