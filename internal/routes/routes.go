@@ -17,6 +17,8 @@ func SetupRouter() *gin.Engine {
 	api := router.Group("/api/v1")
 	{
 		api.POST("/categories", categoryHandler.Create)
+		api.GET("/categories", categoryHandler.FindAll)
+		api.GET("/categories/:id", categoryHandler.FindByID)
 	}
 
 	return router
