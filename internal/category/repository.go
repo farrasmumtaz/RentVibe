@@ -12,6 +12,7 @@ type Repository interface {
 
 	Update(category *models.Category) error
 	Patch(category *models.Category) error
+	Delete(id uint) error
 }
 
 type repository struct{}
@@ -74,4 +75,8 @@ func (r *repository) Update(category *models.Category) error {
 
 func (r *repository) Patch(category *models.Category) error {
 	return config.DB.Save(category).Error
+}
+
+func (r *repository) Delete(id uint) error {
+	return config.DB.Delete(&models.Category{}, id).Error
 }

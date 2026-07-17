@@ -46,7 +46,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 	response.Success(
 		ctx,
 		http.StatusCreated,
-		"Category created successfully",
+		"Kategori berhasil dibuat",
 		category,
 	)
 }
@@ -87,7 +87,7 @@ func (h *Handler) FindAll(ctx *gin.Context) {
 	response.Success(
 		ctx,
 		http.StatusOK,
-		"Categories retrieved successfully",
+		"Kategori berhasil diambil",
 		gin.H{
 			"items": responses,
 			"total": total,
@@ -101,7 +101,7 @@ func (h *Handler) FindByID(ctx *gin.Context) {
 
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
-		response.Error(ctx, http.StatusBadRequest, "Invalid category id")
+		response.Error(ctx, http.StatusBadRequest, "ID kategori tidak valid")
 		return
 	}
 
@@ -109,7 +109,7 @@ func (h *Handler) FindByID(ctx *gin.Context) {
 	if err != nil {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			response.Error(ctx, http.StatusNotFound, "Category not found")
+			response.Error(ctx, http.StatusNotFound, "Kategori tidak ditemukan")
 			return
 		}
 
@@ -128,7 +128,7 @@ func (h *Handler) FindByID(ctx *gin.Context) {
 	response.Success(
 		ctx,
 		http.StatusOK,
-		"Category retrieved successfully",
+		"Kategori berhasil diambil",
 		result,
 	)
 }
@@ -137,7 +137,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
-		response.Error(ctx, http.StatusBadRequest, "Invalid category id")
+		response.Error(ctx, http.StatusBadRequest, "ID kategori tidak valid")
 		return
 	}
 
@@ -152,7 +152,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 	if err != nil {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			response.Error(ctx, http.StatusNotFound, "Category not found")
+			response.Error(ctx, http.StatusNotFound, "Kategori tidak ditemukan")
 			return
 		}
 
@@ -171,7 +171,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 	response.Success(
 		ctx,
 		http.StatusOK,
-		"Category updated successfully",
+		"Kategori berhasil diperbarui",
 		result,
 	)
 }
@@ -180,7 +180,7 @@ func (h *Handler) Patch(ctx *gin.Context) {
 
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
-		response.Error(ctx, http.StatusBadRequest, "Invalid category id")
+		response.Error(ctx, http.StatusBadRequest, "ID kategori tidak valid")
 		return
 	}
 
@@ -195,7 +195,7 @@ func (h *Handler) Patch(ctx *gin.Context) {
 	if err != nil {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			response.Error(ctx, http.StatusNotFound, "Category not found")
+			response.Error(ctx, http.StatusNotFound, "Kategori tidak ditemukan")
 			return
 		}
 
@@ -214,7 +214,35 @@ func (h *Handler) Patch(ctx *gin.Context) {
 	response.Success(
 		ctx,
 		http.StatusOK,
-		"Category patched successfully",
+		"Kategori berhasil diperbarui sebagian",
 		result,
+	)
+}
+
+func (h *Handler) Delete(ctx *gin.Context) {
+
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		response.Error(ctx, http.StatusBadRequest, "ID kategori tidak valid")
+		return
+	}
+
+	err = h.service.Delete(uint(id))
+	if err != nil {
+
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.Error(ctx, http.StatusNotFound, "Kategori tidak ditemukan")
+			return
+		}
+
+		response.Error(ctx, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	response.Success(
+		ctx,
+		http.StatusOK,
+		"Kategori berhasil dihapus",
+		nil,
 	)
 }

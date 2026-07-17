@@ -8,6 +8,7 @@ type Service interface {
 	FindByID(id uint) (*models.Category, error)
 	Update(id uint, req UpdateCategoryRequest) (*models.Category, error)
 	Patch(id uint, req PatchCategoryRequest) (*models.Category, error)
+	Delete(id uint) error
 }
 
 type service struct {
@@ -71,4 +72,14 @@ func (s *service) Patch(id uint, req PatchCategoryRequest) (*models.Category, er
 	}
 
 	return category, nil
+}
+
+func (s *service) Delete(id uint) error {
+
+	_, err := s.repository.FindByID(id)
+	if err != nil {
+		return err
+	}
+
+	return s.repository.Delete(id)
 }

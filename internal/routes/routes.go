@@ -23,6 +23,7 @@ func SetupRouter() *gin.Engine {
 		api.GET("/categories/:id", categoryHandler.FindByID)
 		api.PUT("/categories/:id", categoryHandler.Update)
 		api.PATCH("/categories/:id", categoryHandler.Patch)
+		api.DELETE("/categories/:id", categoryHandler.Delete)
 	}
 	return router
 }
