@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/farrasmumtaz/RentVibe/internal/category"
+	"github.com/farrasmumtaz/RentVibe/internal/item"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,6 +25,16 @@ func SetupRouter() *gin.Engine {
 		api.PUT("/categories/:id", categoryHandler.Update)
 		api.PATCH("/categories/:id", categoryHandler.Patch)
 		api.DELETE("/categories/:id", categoryHandler.Delete)
+	}
+
+	{
+		itemRepository := item.NewRepository()
+		itemService := item.NewService(itemRepository)
+		itemHandler := item.NewHandler(itemService)
+
+		api.POST("/items", itemHandler.Create)
+		api.GET("/items", itemHandler.FindAll)
+
 	}
 	return router
 }
