@@ -9,6 +9,7 @@ type Repository interface {
 	Create(item *models.Item) error
 	FindAll(search string, page int, limit int) ([]models.Item, int64, error)
 	FindByID(id uint) (*models.Item, error)
+	Update(id uint, item *models.Item) error
 }
 
 type repository struct{}
@@ -59,4 +60,16 @@ func (r *repository) FindByID(id uint) (*models.Item, error) {
 	}
 
 	return &item, nil
+}
+
+func (r *repository) Update(id uint, item *models.Item) error {
+	var existing models.Item
+
+	if err := config.DB.First(&existing, id).Error; err != nil {
+		return err
+	}
+
+	item.ID = existing.ID
+
+	return config.DB.Save(item).Error
 }

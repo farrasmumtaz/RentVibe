@@ -35,6 +35,7 @@ func SetupRouter() *gin.Engine {
 		api.POST("/items", itemHandler.Create)
 		api.GET("/items", itemHandler.FindAll)
 		api.GET("/items/:id", itemHandler.FindByID)
+		api.PUT("/items/:id", itemHandler.Update)
 
 	}
 	return router
