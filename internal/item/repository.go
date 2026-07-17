@@ -8,6 +8,7 @@ import (
 type Repository interface {
 	Create(item *models.Item) error
 	FindAll(search string, page int, limit int) ([]models.Item, int64, error)
+	FindByID(id uint) (*models.Item, error)
 }
 
 type repository struct{}
@@ -44,4 +45,18 @@ func (r *repository) FindAll(search string, page int, limit int) ([]models.Item,
 	}
 
 	return items, total, nil
+}
+
+func (r *repository) FindByID(id uint) (*models.Item, error) {
+	var item models.Item
+
+	err := config.DB.
+		Debug().
+		Preload("Category").
+		First(&item, id).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &item, nil
 }

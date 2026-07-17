@@ -7,15 +7,16 @@ import (
 )
 
 type Item struct {
-	ID         uint     `gorm:"primaryKey"`
-	CategoryID uint     `gorm:"not null"`
-	Category   Category `gorm:"foreignKey:CategoryID"`
+	ID uint `gorm:"primaryKey"`
 
-	Name        string  `gorm:"size:150;not null"`
-	Description string  `gorm:"type:text"`
-	PricePerDay float64 `gorm:"not null"`
-	Stock       int     `gorm:"default:0"`
-	ImageURL    string  `gorm:"type:text"`
+	CategoryID uint
+	Category   *Category `gorm:"foreignKey:CategoryID;references:ID"`
+
+	Name        string
+	Description string
+	PricePerDay float64
+	Stock       int
+	ImageURL    string
 
 	CreatedAt time.Time
 	UpdatedAt time.Time

@@ -98,3 +98,39 @@ func (h *Handler) FindAll(ctx *gin.Context) {
 		"limit": limit,
 	})
 }
+func (h *Handler) FindByID(ctx *gin.Context) {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		response.Error(ctx, http.StatusBadRequest, "Invalid ID")
+		return
+	}
+	item, err := h.service.FindByID(uint(id))
+	if err != nil {
+		response.Error(ctx, http.StatusNotFound, "Item not found")
+		return
+	}
+	res := dto.ItemDetailResponse{
+		ID:          item.ID,
+		Name:        item.Name,
+		Description: item.Description,
+		PricePerDay: item.PricePerDay,
+		Stock:       item.Stock,
+		ImageURL:    item.ImageURL,
+		Category: dto.CategoryResponse{
+			ID:          item.Category.ID,
+			Name:        item.Category.Name,
+			Description: item.Category.Description,
+			CreatedAt:   item.Category.CreatedAt,
+			UpdatedAt:   item.Category.UpdatedAt,
+		},
+		CreatedAt: item.CreatedAt,
+		UpdatedAt: item.UpdatedAt,
+	}
+
+	response.Success(
+		ctx,
+		http.StatusOK,
+		"Item retrieved successfully",
+		res,
+	)
+}
