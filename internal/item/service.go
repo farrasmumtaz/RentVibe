@@ -7,6 +7,7 @@ type Service interface {
 	FindAll(search string, page int, limit int) ([]models.Item, int64, error)
 	FindByID(id uint) (*models.Item, error)
 	Update(id uint, item *models.Item) error
+	Patch(id uint, req PatchItemRequest) (*models.Item, error)
 }
 
 type service struct {
@@ -33,4 +34,8 @@ func (s *service) FindByID(id uint) (*models.Item, error) {
 
 func (s *service) Update(id uint, item *models.Item) error {
 	return s.repository.Update(id, item)
+}
+
+func (s *service) Patch(id uint, req PatchItemRequest) (*models.Item, error) {
+	return s.repository.Patch(id, req)
 }
