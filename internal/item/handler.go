@@ -1,6 +1,7 @@
 package item
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -109,6 +110,18 @@ func (h *Handler) FindByID(ctx *gin.Context) {
 		response.Error(ctx, http.StatusNotFound, "Item not found")
 		return
 	}
+	var category dto.CategoryResponse
+
+	if item.Category != nil {
+		category = dto.CategoryResponse{
+			ID:          item.Category.ID,
+			Name:        item.Category.Name,
+			Description: item.Category.Description,
+			CreatedAt:   item.Category.CreatedAt,
+			UpdatedAt:   item.Category.UpdatedAt,
+		}
+	}
+
 	res := dto.ItemDetailResponse{
 		ID:          item.ID,
 		Name:        item.Name,
@@ -116,15 +129,9 @@ func (h *Handler) FindByID(ctx *gin.Context) {
 		PricePerDay: item.PricePerDay,
 		Stock:       item.Stock,
 		ImageURL:    item.ImageURL,
-		Category: dto.CategoryResponse{
-			ID:          item.Category.ID,
-			Name:        item.Category.Name,
-			Description: item.Category.Description,
-			CreatedAt:   item.Category.CreatedAt,
-			UpdatedAt:   item.Category.UpdatedAt,
-		},
-		CreatedAt: item.CreatedAt,
-		UpdatedAt: item.UpdatedAt,
+		Category:    category,
+		CreatedAt:   item.CreatedAt,
+		UpdatedAt:   item.UpdatedAt,
 	}
 
 	response.Success(
@@ -221,4 +228,28 @@ func (h *Handler) Patch(ctx *gin.Context) {
 		"Item patched successfully",
 		res,
 	)
+}
+
+func (h *Handler) Delete(ctx *gin.Context) {
+	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
+
+	fmt.Println("DELETE ID:", id)
+
+	item, err := h.service.FindByID(uint(id))
+
+	fmt.Println("FIND ERROR:", err)
+
+	if item != nil {
+		fmt.Printf("ITEM: %+v\n", *item)
+	}
+
+	if err != nil {
+		response.Error(ctx, http.StatusNotFound, "Item not found")
+		return
+	}
+
+	err = h.service.Delete(uint(id))
+	fmt.Println("DELETE ERROR:", err)
+
+	response.Success(ctx, http.StatusOK, "Item deleted successfully", nil)
 }

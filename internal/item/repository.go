@@ -1,6 +1,8 @@
 package item
 
 import (
+	"fmt"
+
 	"github.com/farrasmumtaz/RentVibe/config"
 	"github.com/farrasmumtaz/RentVibe/internal/models"
 )
@@ -11,6 +13,7 @@ type Repository interface {
 	FindByID(id uint) (*models.Item, error)
 	Update(id uint, item *models.Item) error
 	Patch(id uint, req PatchItemRequest) (*models.Item, error)
+	Delete(id uint) error
 }
 
 type repository struct{}
@@ -56,11 +59,11 @@ func (r *repository) FindByID(id uint) (*models.Item, error) {
 		Debug().
 		Preload("Category").
 		First(&item, id).Error
-	if err != nil {
-		return nil, err
-	}
 
-	return &item, nil
+	fmt.Println("FindByID error:", err)
+	fmt.Printf("Item: %+v\n", item)
+
+	return &item, err
 }
 
 func (r *repository) Update(id uint, item *models.Item) error {
@@ -111,4 +114,8 @@ func (r *repository) Patch(id uint, req PatchItemRequest) (*models.Item, error) 
 	}
 
 	return &item, nil
+}
+
+func (r *repository) Delete(id uint) error {
+	return config.DB.Delete(&models.Item{}, id).Error
 }
