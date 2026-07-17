@@ -5,6 +5,7 @@ import "github.com/farrasmumtaz/RentVibe/internal/models"
 type Service interface {
 	Create(item *models.Item) error
 	FindAll(search string, page int, limit int) ([]models.Item, int64, error)
+	FindByID(id uint) (*models.Item, error)
 }
 
 type service struct {
@@ -23,4 +24,8 @@ func (s *service) Create(item *models.Item) error {
 
 func (s *service) FindAll(search string, page int, limit int) ([]models.Item, int64, error) {
 	return s.repository.FindAll(search, page, limit)
+}
+
+func (s *service) FindByID(id uint) (*models.Item, error) {
+	return s.repository.FindByID(id)
 }
