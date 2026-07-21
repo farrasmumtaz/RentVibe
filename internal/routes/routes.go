@@ -1,8 +1,12 @@
 package routes
 
 import (
+	"time"
+
+	"github.com/farrasmumtaz/RentVibe/internal/auth"
 	"github.com/farrasmumtaz/RentVibe/internal/category"
 	"github.com/farrasmumtaz/RentVibe/internal/item"
+	"github.com/farrasmumtaz/RentVibe/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,8 +14,26 @@ import (
 func SetupRouter() *gin.Engine {
 
 	router := gin.Default()
+	router.Use(middleware.SecurityHeaders())
+	router.Use(middleware.CORS())
+	router.Use(middleware.RateLimiter(20, time.Minute))
 
 	api := router.Group("/api/v1")
+
+	tokenService := auth.NewTokenService()
+
+	authRepository := auth.NewRepository()
+	authService := auth.NewService(authRepository, tokenService)
+	authHandler := auth.NewHandler(authService)
+
+	authRoutes := api.Group("/auth")
+	{
+		authRoutes.POST("/register", authHandler.Register)
+		authRoutes.POST("/login", authHandler.Login)
+	}
+
+	protected := api.Group("")
+	protected.Use(middleware.Auth(tokenService))
 
 	// Category
 	{
@@ -19,12 +41,12 @@ func SetupRouter() *gin.Engine {
 		categoryService := category.NewService(categoryRepository)
 		categoryHandler := category.NewHandler(categoryService)
 
-		api.POST("/categories", categoryHandler.Create)
-		api.GET("/categories", categoryHandler.FindAll)
-		api.GET("/categories/:id", categoryHandler.FindByID)
-		api.PUT("/categories/:id", categoryHandler.Update)
-		api.PATCH("/categories/:id", categoryHandler.Patch)
-		api.DELETE("/categories/:id", categoryHandler.Delete)
+		protected.POST("/categories", categoryHandler.Create)
+		protected.GET("/categories", categoryHandler.FindAll)
+		protected.GET("/categories/:id", categoryHandler.FindByID)
+		protected.PUT("/categories/:id", categoryHandler.Update)
+		protected.PATCH("/categories/:id", categoryHandler.Patch)
+		protected.DELETE("/categories/:id", categoryHandler.Delete)
 	}
 
 	{
@@ -32,9 +54,12 @@ func SetupRouter() *gin.Engine {
 		itemService := item.NewService(itemRepository)
 		itemHandler := item.NewHandler(itemService)
 
-		api.POST("/items", itemHandler.Create)
-		api.GET("/items", itemHandler.FindAll)
-		api.GET("/items/:id", itemHandler.FindByID)
+		protected.POST("/items", itemHandler.Create)
+		protected.GET("/items", itemHandler.FindAll)
+		protected.GET("/items/:id", itemHandler.FindByID)
+		protected.PUT("/items/:id", itemHandler.Update)
+		protected.PATCH("/items/:id", itemHandler.Patch)
+		protected.DELETE("/items/:id", itemHandler.Delete)
 
 	}
 	return router

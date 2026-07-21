@@ -6,6 +6,9 @@ type Service interface {
 	Create(item *models.Item) error
 	FindAll(search string, page int, limit int) ([]models.Item, int64, error)
 	FindByID(id uint) (*models.Item, error)
+	Update(id uint, item *models.Item) error
+	Patch(id uint, req PatchItemRequest) (*models.Item, error)
+	Delete(id uint) error
 }
 
 type service struct {
@@ -28,4 +31,16 @@ func (s *service) FindAll(search string, page int, limit int) ([]models.Item, in
 
 func (s *service) FindByID(id uint) (*models.Item, error) {
 	return s.repository.FindByID(id)
+}
+
+func (s *service) Update(id uint, item *models.Item) error {
+	return s.repository.Update(id, item)
+}
+
+func (s *service) Patch(id uint, req PatchItemRequest) (*models.Item, error) {
+	return s.repository.Patch(id, req)
+}
+
+func (s *service) Delete(id uint) error {
+	return s.repository.Delete(id)
 }
