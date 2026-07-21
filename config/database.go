@@ -23,6 +23,7 @@ func ConnectDatabase() {
 	DB = database
 
 	err = DB.AutoMigrate(
+		&models.User{},
 		&models.Category{},
 		&models.Item{},
 	)
