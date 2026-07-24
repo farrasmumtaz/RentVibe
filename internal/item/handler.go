@@ -1,7 +1,6 @@
 package item
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -15,6 +14,11 @@ import (
 type Handler struct {
 	service Service
 }
+
+const (
+	defaultPageSize = 10
+	maxPageSize     = 100
+)
 
 func NewHandler(service Service) *Handler {
 	return &Handler{
@@ -59,7 +63,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 	response.Success(
 		ctx,
 		http.StatusCreated,
-		"Item created successfully",
+		"Barang berhasil dibuat",
 		res,
 	)
 }
@@ -68,7 +72,17 @@ func (h *Handler) FindAll(ctx *gin.Context) {
 	search := ctx.DefaultQuery("search", "")
 
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", strconv.Itoa(defaultPageSize)))
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 {
+		limit = defaultPageSize
+	}
+	if limit > maxPageSize {
+		limit = maxPageSize
+	}
 
 	items, total, err := h.service.FindAll(search, page, limit)
 	if err != nil {
@@ -92,22 +106,23 @@ func (h *Handler) FindAll(ctx *gin.Context) {
 		})
 	}
 
-	response.Success(ctx, http.StatusOK, "Items retrieved successfully", gin.H{
+	response.Success(ctx, http.StatusOK, "Daftar barang berhasil diambil", gin.H{
 		"items": result,
 		"total": total,
 		"page":  page,
 		"limit": limit,
 	})
 }
+
 func (h *Handler) FindByID(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
-		response.Error(ctx, http.StatusBadRequest, "Invalid ID")
+		response.Error(ctx, http.StatusBadRequest, "ID tidak valid")
 		return
 	}
 	item, err := h.service.FindByID(uint(id))
 	if err != nil {
-		response.Error(ctx, http.StatusNotFound, "Item not found")
+		response.Error(ctx, http.StatusNotFound, "Barang tidak ditemukan")
 		return
 	}
 	var category dto.CategoryResponse
@@ -137,7 +152,7 @@ func (h *Handler) FindByID(ctx *gin.Context) {
 	response.Success(
 		ctx,
 		http.StatusOK,
-		"Item retrieved successfully",
+		"Detail barang berhasil diambil",
 		res,
 	)
 }
@@ -145,7 +160,7 @@ func (h *Handler) FindByID(ctx *gin.Context) {
 func (h *Handler) Update(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
-		response.Error(ctx, http.StatusBadRequest, "Invalid ID")
+		response.Error(ctx, http.StatusBadRequest, "ID tidak valid")
 		return
 	}
 
@@ -166,7 +181,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 	}
 
 	if err := h.service.Update(uint(id), &item); err != nil {
-		response.Error(ctx, http.StatusNotFound, "Item not found")
+		response.Error(ctx, http.StatusNotFound, "Barang tidak ditemukan")
 		return
 	}
 
@@ -185,7 +200,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 	response.Success(
 		ctx,
 		http.StatusOK,
-		"Item updated successfully",
+		"Barang berhasil diperbarui",
 		res,
 	)
 }
@@ -193,7 +208,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 func (h *Handler) Patch(ctx *gin.Context) {
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
-		response.Error(ctx, http.StatusBadRequest, "Invalid ID")
+		response.Error(ctx, http.StatusBadRequest, "ID tidak valid")
 		return
 	}
 
@@ -206,7 +221,7 @@ func (h *Handler) Patch(ctx *gin.Context) {
 
 	item, err := h.service.Patch(uint(id), req)
 	if err != nil {
-		response.Error(ctx, http.StatusNotFound, "Item not found")
+		response.Error(ctx, http.StatusNotFound, "Barang tidak ditemukan")
 		return
 	}
 
@@ -225,31 +240,28 @@ func (h *Handler) Patch(ctx *gin.Context) {
 	response.Success(
 		ctx,
 		http.StatusOK,
-		"Item patched successfully",
+		"Barang berhasil diperbarui sebagian",
 		res,
 	)
 }
 
 func (h *Handler) Delete(ctx *gin.Context) {
-	id, _ := strconv.ParseUint(ctx.Param("id"), 10, 64)
-
-	fmt.Println("DELETE ID:", id)
-
-	item, err := h.service.FindByID(uint(id))
-
-	fmt.Println("FIND ERROR:", err)
-
-	if item != nil {
-		fmt.Printf("ITEM: %+v\n", *item)
-	}
-
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
 	if err != nil {
-		response.Error(ctx, http.StatusNotFound, "Item not found")
+		response.Error(ctx, http.StatusBadRequest, "ID tidak valid")
 		return
 	}
 
-	err = h.service.Delete(uint(id))
-	fmt.Println("DELETE ERROR:", err)
+	item, err := h.service.FindByID(uint(id))
+	if err != nil || item == nil {
+		response.Error(ctx, http.StatusNotFound, "Barang tidak ditemukan")
+		return
+	}
 
-	response.Success(ctx, http.StatusOK, "Item deleted successfully", nil)
+	if err := h.service.Delete(uint(id)); err != nil {
+		response.Error(ctx, http.StatusInternalServerError, "Gagal menghapus barang")
+		return
+	}
+
+	response.Success(ctx, http.StatusOK, "Barang berhasil dihapus", nil)
 }

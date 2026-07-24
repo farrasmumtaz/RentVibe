@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter() *gin.Engine {
+func SetupRouter() (*gin.Engine, error) {
 
 	router := gin.Default()
 	router.Use(middleware.SecurityHeaders())
@@ -20,7 +20,10 @@ func SetupRouter() *gin.Engine {
 
 	api := router.Group("/api/v1")
 
-	tokenService := auth.NewTokenService()
+	tokenService, err := auth.NewTokenService()
+	if err != nil {
+		return nil, err
+	}
 
 	authRepository := auth.NewRepository()
 	authService := auth.NewService(authRepository, tokenService)
@@ -62,5 +65,5 @@ func SetupRouter() *gin.Engine {
 		protected.DELETE("/items/:id", itemHandler.Delete)
 
 	}
-	return router
+	return router, nil
 }

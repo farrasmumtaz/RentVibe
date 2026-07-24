@@ -1,8 +1,6 @@
 package item
 
 import (
-	"fmt"
-
 	"github.com/farrasmumtaz/RentVibe/config"
 	"github.com/farrasmumtaz/RentVibe/internal/models"
 )
@@ -56,12 +54,8 @@ func (r *repository) FindByID(id uint) (*models.Item, error) {
 	var item models.Item
 
 	err := config.DB.
-		Debug().
 		Preload("Category").
 		First(&item, id).Error
-
-	fmt.Println("FindByID error:", err)
-	fmt.Printf("Item: %+v\n", item)
 
 	return &item, err
 }
@@ -73,9 +67,19 @@ func (r *repository) Update(id uint, item *models.Item) error {
 		return err
 	}
 
-	item.ID = existing.ID
+	existing.Name = item.Name
+	existing.Description = item.Description
+	existing.PricePerDay = item.PricePerDay
+	existing.Stock = item.Stock
+	existing.ImageURL = item.ImageURL
+	existing.CategoryID = item.CategoryID
 
-	return config.DB.Save(item).Error
+	if err := config.DB.Save(&existing).Error; err != nil {
+		return err
+	}
+
+	*item = existing
+	return nil
 }
 
 func (r *repository) Patch(id uint, req PatchItemRequest) (*models.Item, error) {

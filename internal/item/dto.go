@@ -21,8 +21,8 @@ type UpdateItemRequest struct {
 type PatchItemRequest struct {
 	Name        *string  `json:"name,omitempty"`
 	Description *string  `json:"description,omitempty"`
-	PricePerDay *float64 `json:"price,omitempty"`
+	PricePerDay *float64 `json:"price_per_day,omitempty" binding:"omitempty,gt=0"`
 	Stock       *int     `json:"stock,omitempty"`
-	ImageURL    *string  `json:"image_url"`
+	ImageURL    *string  `json:"image_url,omitempty"`
 	CategoryID  *uint    `json:"category_id,omitempty"`
 }

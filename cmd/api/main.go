@@ -14,7 +14,10 @@ func main() {
 
 	config.ConnectDatabase()
 
-	router := routes.SetupRouter()
+	router, err := routes.SetupRouter()
+	if err != nil {
+		log.Fatal("Failed to configure router:", err)
+	}
 
 	port := os.Getenv("APP_PORT")
 
