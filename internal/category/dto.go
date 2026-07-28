@@ -11,6 +11,6 @@ type UpdateCategoryRequest struct {
 }
 
 type PatchCategoryRequest struct {
-	Name        *string `json:"name,omitempty"`
+	Name        *string `json:"name,omitempty" binding:"omitempty,min=1,max=100"`
 	Description *string `json:"description,omitempty"`
 }

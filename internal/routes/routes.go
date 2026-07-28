@@ -1,9 +1,12 @@
 package routes
 
 import (
+	"net/http"
 	"time"
 
+	"github.com/farrasmumtaz/RentVibe/config"
 	"github.com/farrasmumtaz/RentVibe/internal/auth"
+	"github.com/farrasmumtaz/RentVibe/internal/cache"
 	"github.com/farrasmumtaz/RentVibe/internal/category"
 	"github.com/farrasmumtaz/RentVibe/internal/item"
 	"github.com/farrasmumtaz/RentVibe/internal/middleware"
@@ -11,7 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter() (*gin.Engine, error) {
+func SetupRouter(cacheStore cache.Store) (*gin.Engine, error) {
 
 	router := gin.Default()
 	router.Use(middleware.SecurityHeaders())
@@ -19,6 +22,15 @@ func SetupRouter() (*gin.Engine, error) {
 	router.Use(middleware.RateLimiter(20, time.Minute))
 
 	api := router.Group("/api/v1")
+
+	router.GET("/health", func(ctx *gin.Context) {
+		sqlDB, err := config.DB.DB()
+		if err != nil || sqlDB.PingContext(ctx.Request.Context()) != nil {
+			ctx.JSON(http.StatusServiceUnavailable, gin.H{"status": "unhealthy"})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"status": "healthy"})
+	})
 
 	tokenService, err := auth.NewTokenService()
 	if err != nil {
@@ -41,7 +53,7 @@ func SetupRouter() (*gin.Engine, error) {
 	// Category
 	{
 		categoryRepository := category.NewRepository()
-		categoryService := category.NewService(categoryRepository)
+		categoryService := category.NewService(categoryRepository, cacheStore)
 		categoryHandler := category.NewHandler(categoryService)
 
 		protected.POST("/categories", categoryHandler.Create)
@@ -54,7 +66,7 @@ func SetupRouter() (*gin.Engine, error) {
 
 	{
 		itemRepository := item.NewRepository()
-		itemService := item.NewService(itemRepository)
+		itemService := item.NewService(itemRepository, cacheStore)
 		itemHandler := item.NewHandler(itemService)
 
 		protected.POST("/items", itemHandler.Create)
