@@ -16,8 +16,9 @@ import (
 const defaultTokenTTL = 24 * time.Hour
 
 var (
-	ErrInvalidToken = errors.New("invalid token")
-	ErrExpiredToken = errors.New("expired token")
+	ErrInvalidToken     = errors.New("invalid token")
+	ErrExpiredToken     = errors.New("expired token")
+	ErrMissingJWTSecret = errors.New("JWT_SECRET must be configured")
 )
 
 type Claims struct {
@@ -42,16 +43,16 @@ type hmacTokenService struct {
 	ttl    time.Duration
 }
 
-func NewTokenService() TokenService {
+func NewTokenService() (TokenService, error) {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		secret = "rentvibe-development-secret-change-me"
+		return nil, ErrMissingJWTSecret
 	}
 
 	return &hmacTokenService{
 		secret: []byte(secret),
 		ttl:    tokenTTLFromEnv(),
-	}
+	}, nil
 }
 
 func (s *hmacTokenService) Generate(userID uint, email string) (string, error) {

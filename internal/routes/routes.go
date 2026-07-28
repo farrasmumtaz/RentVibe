@@ -1,9 +1,12 @@
 package routes
 
 import (
+	"net/http"
 	"time"
 
+	"github.com/farrasmumtaz/RentVibe/config"
 	"github.com/farrasmumtaz/RentVibe/internal/auth"
+	"github.com/farrasmumtaz/RentVibe/internal/cache"
 	"github.com/farrasmumtaz/RentVibe/internal/category"
 	"github.com/farrasmumtaz/RentVibe/internal/item"
 	"github.com/farrasmumtaz/RentVibe/internal/middleware"
@@ -11,7 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter() *gin.Engine {
+func SetupRouter(cacheStore cache.Store) (*gin.Engine, error) {
 
 	router := gin.Default()
 	router.Use(middleware.SecurityHeaders())
@@ -20,7 +23,19 @@ func SetupRouter() *gin.Engine {
 
 	api := router.Group("/api/v1")
 
-	tokenService := auth.NewTokenService()
+	router.GET("/health", func(ctx *gin.Context) {
+		sqlDB, err := config.DB.DB()
+		if err != nil || sqlDB.PingContext(ctx.Request.Context()) != nil {
+			ctx.JSON(http.StatusServiceUnavailable, gin.H{"status": "unhealthy"})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"status": "healthy"})
+	})
+
+	tokenService, err := auth.NewTokenService()
+	if err != nil {
+		return nil, err
+	}
 
 	authRepository := auth.NewRepository()
 	authService := auth.NewService(authRepository, tokenService)
@@ -38,7 +53,7 @@ func SetupRouter() *gin.Engine {
 	// Category
 	{
 		categoryRepository := category.NewRepository()
-		categoryService := category.NewService(categoryRepository)
+		categoryService := category.NewService(categoryRepository, cacheStore)
 		categoryHandler := category.NewHandler(categoryService)
 
 		protected.POST("/categories", categoryHandler.Create)
@@ -51,7 +66,7 @@ func SetupRouter() *gin.Engine {
 
 	{
 		itemRepository := item.NewRepository()
-		itemService := item.NewService(itemRepository)
+		itemService := item.NewService(itemRepository, cacheStore)
 		itemHandler := item.NewHandler(itemService)
 
 		protected.POST("/items", itemHandler.Create)
@@ -62,5 +77,5 @@ func SetupRouter() *gin.Engine {
 		protected.DELETE("/items/:id", itemHandler.Delete)
 
 	}
-	return router
+	return router, nil
 }

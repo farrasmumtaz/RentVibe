@@ -17,6 +17,11 @@ type Handler struct {
 	service Service
 }
 
+const (
+	defaultPageSize = 10
+	maxPageSize     = 100
+)
+
 func NewHandler(service Service) *Handler {
 	return &Handler{
 		service: service,
@@ -56,14 +61,17 @@ func (h *Handler) FindAll(ctx *gin.Context) {
 	search := ctx.DefaultQuery("search", "")
 
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", strconv.Itoa(defaultPageSize)))
 
 	if page < 1 {
 		page = 1
 	}
 
 	if limit < 1 {
-		limit = 10
+		limit = defaultPageSize
+	}
+	if limit > maxPageSize {
+		limit = maxPageSize
 	}
 
 	categories, total, err := h.service.FindAll(search, page, limit)
@@ -123,6 +131,14 @@ func (h *Handler) FindByID(ctx *gin.Context) {
 		Description: category.Description,
 		CreatedAt:   category.CreatedAt,
 		UpdatedAt:   category.UpdatedAt,
+	}
+	for _, item := range category.Items {
+		result.Items = append(result.Items, dto.ItemResponse{
+			ID: item.ID, CategoryID: item.CategoryID, Name: item.Name,
+			Description: item.Description, PricePerDay: item.PricePerDay,
+			Stock: item.Stock, ImageURL: item.ImageURL,
+			CreatedAt: item.CreatedAt, UpdatedAt: item.UpdatedAt,
+		})
 	}
 
 	response.Success(
