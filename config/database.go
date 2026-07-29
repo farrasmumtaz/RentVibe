@@ -6,8 +6,6 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/farrasmumtaz/RentVibe/internal/models"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -24,18 +22,7 @@ func ConnectDatabase() {
 
 	DB = database
 
-	err = DB.AutoMigrate(
-		&models.User{},
-		&models.Category{},
-		&models.Item{},
-	)
-
-	if err != nil {
-		log.Fatal("Migration failed:", err)
-	}
-
 	log.Println("Database connected successfully")
-	log.Println("Database migration completed")
 }
 
 func databaseDSN() string {

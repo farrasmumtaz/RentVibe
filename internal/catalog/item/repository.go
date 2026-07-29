@@ -2,15 +2,15 @@ package item
 
 import (
 	"github.com/farrasmumtaz/RentVibe/config"
-	"github.com/farrasmumtaz/RentVibe/internal/models"
+	"github.com/farrasmumtaz/RentVibe/internal/catalog"
 )
 
 type Repository interface {
-	Create(item *models.Item) error
-	FindAll(search string, page int, limit int) ([]models.Item, int64, error)
-	FindByID(id uint) (*models.Item, error)
-	Update(id uint, item *models.Item) error
-	Patch(id uint, req PatchItemRequest) (*models.Item, error)
+	Create(item *catalog.Item) error
+	FindAll(search string, page int, limit int) ([]catalog.Item, int64, error)
+	FindByID(id uint) (*catalog.Item, error)
+	Update(id uint, item *catalog.Item) error
+	Patch(id uint, req PatchItemRequest) (*catalog.Item, error)
 	Delete(id uint) error
 }
 
@@ -20,15 +20,15 @@ func NewRepository() Repository {
 	return &repository{}
 }
 
-func (r *repository) Create(item *models.Item) error {
+func (r *repository) Create(item *catalog.Item) error {
 	return config.DB.Create(item).Error
 }
 
-func (r *repository) FindAll(search string, page int, limit int) ([]models.Item, int64, error) {
-	var items []models.Item
+func (r *repository) FindAll(search string, page int, limit int) ([]catalog.Item, int64, error) {
+	var items []catalog.Item
 	var total int64
 
-	query := config.DB.Model(&models.Item{})
+	query := config.DB.Model(&catalog.Item{})
 
 	if search != "" {
 		query = query.Where("LOWER(name) LIKE LOWER(?)", "%"+search+"%")
@@ -50,8 +50,8 @@ func (r *repository) FindAll(search string, page int, limit int) ([]models.Item,
 	return items, total, nil
 }
 
-func (r *repository) FindByID(id uint) (*models.Item, error) {
-	var item models.Item
+func (r *repository) FindByID(id uint) (*catalog.Item, error) {
+	var item catalog.Item
 
 	err := config.DB.
 		Preload("Category").
@@ -60,8 +60,8 @@ func (r *repository) FindByID(id uint) (*models.Item, error) {
 	return &item, err
 }
 
-func (r *repository) Update(id uint, item *models.Item) error {
-	var existing models.Item
+func (r *repository) Update(id uint, item *catalog.Item) error {
+	var existing catalog.Item
 
 	if err := config.DB.First(&existing, id).Error; err != nil {
 		return err
@@ -82,8 +82,8 @@ func (r *repository) Update(id uint, item *models.Item) error {
 	return nil
 }
 
-func (r *repository) Patch(id uint, req PatchItemRequest) (*models.Item, error) {
-	var item models.Item
+func (r *repository) Patch(id uint, req PatchItemRequest) (*catalog.Item, error) {
+	var item catalog.Item
 
 	if err := config.DB.First(&item, id).Error; err != nil {
 		return nil, err
@@ -121,5 +121,5 @@ func (r *repository) Patch(id uint, req PatchItemRequest) (*models.Item, error) 
 }
 
 func (r *repository) Delete(id uint) error {
-	return config.DB.Delete(&models.Item{}, id).Error
+	return config.DB.Delete(&catalog.Item{}, id).Error
 }

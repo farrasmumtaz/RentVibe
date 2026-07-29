@@ -6,25 +6,25 @@ import (
 	"testing"
 	"time"
 
-	"github.com/farrasmumtaz/RentVibe/internal/models"
+	"github.com/farrasmumtaz/RentVibe/internal/catalog"
 )
 
 type repositoryStub struct {
 	findByIDCalls int
-	item          *models.Item
+	item          *catalog.Item
 }
 
-func (r *repositoryStub) Create(*models.Item) error { return nil }
-func (r *repositoryStub) FindAll(string, int, int) ([]models.Item, int64, error) {
+func (r *repositoryStub) Create(*catalog.Item) error { return nil }
+func (r *repositoryStub) FindAll(string, int, int) ([]catalog.Item, int64, error) {
 	return nil, 0, nil
 }
-func (r *repositoryStub) FindByID(uint) (*models.Item, error) {
+func (r *repositoryStub) FindByID(uint) (*catalog.Item, error) {
 	r.findByIDCalls++
 	return r.item, nil
 }
-func (r *repositoryStub) Update(uint, *models.Item) error                    { return nil }
-func (r *repositoryStub) Patch(uint, PatchItemRequest) (*models.Item, error) { return r.item, nil }
-func (r *repositoryStub) Delete(uint) error                                  { return nil }
+func (r *repositoryStub) Update(uint, *catalog.Item) error                    { return nil }
+func (r *repositoryStub) Patch(uint, PatchItemRequest) (*catalog.Item, error) { return r.item, nil }
+func (r *repositoryStub) Delete(uint) error                                   { return nil }
 
 type cacheStub struct {
 	values map[string][]byte
@@ -54,7 +54,7 @@ func (c *cacheStub) DeleteByPrefix(_ context.Context, prefix string) error {
 }
 
 func TestFindByIDUsesCacheAfterFirstQuery(t *testing.T) {
-	repository := &repositoryStub{item: &models.Item{Name: "Sony A7"}}
+	repository := &repositoryStub{item: &catalog.Item{Name: "Sony A7"}}
 	cacheStore := &cacheStub{values: make(map[string][]byte)}
 	service := NewService(repository, cacheStore)
 

@@ -5,8 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/farrasmumtaz/RentVibe/internal/dto"
-	"github.com/farrasmumtaz/RentVibe/internal/models"
+	"github.com/farrasmumtaz/RentVibe/internal/catalog"
 	"github.com/farrasmumtaz/RentVibe/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -37,7 +36,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 		return
 	}
 
-	category := models.Category{
+	category := catalog.Category{
 		Name:        req.Name,
 		Description: req.Description,
 	}
@@ -80,10 +79,10 @@ func (h *Handler) FindAll(ctx *gin.Context) {
 		return
 	}
 
-	responses := make([]dto.CategoryResponse, 0, len(categories))
+	responses := make([]Response, 0, len(categories))
 
 	for _, category := range categories {
-		responses = append(responses, dto.CategoryResponse{
+		responses = append(responses, Response{
 			ID:          category.ID,
 			Name:        category.Name,
 			Description: category.Description,
@@ -125,7 +124,7 @@ func (h *Handler) FindByID(ctx *gin.Context) {
 		return
 	}
 
-	result := dto.CategoryResponse{
+	result := Response{
 		ID:          category.ID,
 		Name:        category.Name,
 		Description: category.Description,
@@ -133,7 +132,7 @@ func (h *Handler) FindByID(ctx *gin.Context) {
 		UpdatedAt:   category.UpdatedAt,
 	}
 	for _, item := range category.Items {
-		result.Items = append(result.Items, dto.ItemResponse{
+		result.Items = append(result.Items, ItemResponse{
 			ID: item.ID, CategoryID: item.CategoryID, Name: item.Name,
 			Description: item.Description, PricePerDay: item.PricePerDay,
 			Stock: item.Stock, ImageURL: item.ImageURL,
@@ -176,7 +175,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 		return
 	}
 
-	result := dto.CategoryResponse{
+	result := Response{
 		ID:          category.ID,
 		Name:        category.Name,
 		Description: category.Description,
@@ -219,7 +218,7 @@ func (h *Handler) Patch(ctx *gin.Context) {
 		return
 	}
 
-	result := dto.CategoryResponse{
+	result := Response{
 		ID:          category.ID,
 		Name:        category.Name,
 		Description: category.Description,

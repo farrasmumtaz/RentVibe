@@ -6,24 +6,24 @@ import (
 	"testing"
 	"time"
 
-	"github.com/farrasmumtaz/RentVibe/internal/models"
+	"github.com/farrasmumtaz/RentVibe/internal/catalog"
 )
 
 type repositoryStub struct {
 	findAllCalls int
-	items        []models.Category
+	items        []catalog.Category
 	total        int64
 }
 
-func (r *repositoryStub) Create(*models.Category) error { return nil }
-func (r *repositoryStub) FindAll(string, int, int) ([]models.Category, int64, error) {
+func (r *repositoryStub) Create(*catalog.Category) error { return nil }
+func (r *repositoryStub) FindAll(string, int, int) ([]catalog.Category, int64, error) {
 	r.findAllCalls++
 	return r.items, r.total, nil
 }
-func (r *repositoryStub) FindByID(uint) (*models.Category, error) { return nil, nil }
-func (r *repositoryStub) Update(*models.Category) error           { return nil }
-func (r *repositoryStub) Patch(*models.Category) error            { return nil }
-func (r *repositoryStub) Delete(uint) error                       { return nil }
+func (r *repositoryStub) FindByID(uint) (*catalog.Category, error) { return nil, nil }
+func (r *repositoryStub) Update(*catalog.Category) error           { return nil }
+func (r *repositoryStub) Patch(*catalog.Category) error            { return nil }
+func (r *repositoryStub) Delete(uint) error                        { return nil }
 
 type cacheStub struct {
 	values map[string][]byte
@@ -56,7 +56,7 @@ func (c *cacheStub) DeleteByPrefix(_ context.Context, prefix string) error {
 
 func TestFindAllCachesRepositoryResult(t *testing.T) {
 	repository := &repositoryStub{
-		items: []models.Category{{Name: "Camera"}},
+		items: []catalog.Category{{Name: "Camera"}},
 		total: 1,
 	}
 	cacheStore := &cacheStub{values: make(map[string][]byte)}
@@ -87,7 +87,7 @@ func TestCreateInvalidatesCategoryCache(t *testing.T) {
 	}}
 	service := NewService(repository, cacheStore)
 
-	if err := service.Create(&models.Category{Name: "Audio"}); err != nil {
+	if err := service.Create(&catalog.Category{Name: "Audio"}); err != nil {
 		t.Fatalf("Create returned error: %v", err)
 	}
 	if _, exists := cacheStore.values["categories:all:page=1"]; exists {

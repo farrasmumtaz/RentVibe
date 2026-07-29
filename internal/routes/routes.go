@@ -7,8 +7,8 @@ import (
 	"github.com/farrasmumtaz/RentVibe/config"
 	"github.com/farrasmumtaz/RentVibe/internal/auth"
 	"github.com/farrasmumtaz/RentVibe/internal/cache"
-	"github.com/farrasmumtaz/RentVibe/internal/category"
-	"github.com/farrasmumtaz/RentVibe/internal/item"
+	"github.com/farrasmumtaz/RentVibe/internal/catalog/category"
+	"github.com/farrasmumtaz/RentVibe/internal/catalog/item"
 	"github.com/farrasmumtaz/RentVibe/internal/middleware"
 
 	"github.com/gin-gonic/gin"
