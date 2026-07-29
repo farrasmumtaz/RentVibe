@@ -4,8 +4,6 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/farrasmumtaz/RentVibe/internal/models"
-
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -48,7 +46,7 @@ func (s *service) Register(req RegisterRequest) (*AuthResponse, error) {
 		return nil, err
 	}
 
-	user := models.User{
+	user := User{
 		Name:         strings.TrimSpace(req.Name),
 		Email:        email,
 		PasswordHash: string(passwordHash),
@@ -80,7 +78,7 @@ func (s *service) Login(req LoginRequest) (*AuthResponse, error) {
 	return s.authResponse(user)
 }
 
-func (s *service) authResponse(user *models.User) (*AuthResponse, error) {
+func (s *service) authResponse(user *User) (*AuthResponse, error) {
 	token, err := s.tokenService.Generate(user.ID, user.Email)
 	if err != nil {
 		return nil, err

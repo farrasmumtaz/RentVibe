@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/farrasmumtaz/RentVibe/internal/cache"
-	"github.com/farrasmumtaz/RentVibe/internal/models"
+	"github.com/farrasmumtaz/RentVibe/internal/catalog"
 )
 
 const (
@@ -16,16 +16,16 @@ const (
 )
 
 type categoryListCache struct {
-	Items []models.Category `json:"items"`
-	Total int64             `json:"total"`
+	Items []catalog.Category `json:"items"`
+	Total int64              `json:"total"`
 }
 
 type Service interface {
-	Create(category *models.Category) error
-	FindAll(search string, page int, limit int) ([]models.Category, int64, error)
-	FindByID(id uint) (*models.Category, error)
-	Update(id uint, req UpdateCategoryRequest) (*models.Category, error)
-	Patch(id uint, req PatchCategoryRequest) (*models.Category, error)
+	Create(category *catalog.Category) error
+	FindAll(search string, page int, limit int) ([]catalog.Category, int64, error)
+	FindByID(id uint) (*catalog.Category, error)
+	Update(id uint, req UpdateCategoryRequest) (*catalog.Category, error)
+	Patch(id uint, req PatchCategoryRequest) (*catalog.Category, error)
 	Delete(id uint) error
 }
 
@@ -41,7 +41,7 @@ func NewService(repository Repository, cacheStore cache.Store) Service {
 	}
 }
 
-func (s *service) Create(category *models.Category) error {
+func (s *service) Create(category *catalog.Category) error {
 	if err := s.repository.Create(category); err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (s *service) Create(category *models.Category) error {
 	return nil
 }
 
-func (s *service) FindAll(search string, page int, limit int) ([]models.Category, int64, error) {
+func (s *service) FindAll(search string, page int, limit int) ([]catalog.Category, int64, error) {
 	ctx := context.Background()
 	key := fmt.Sprintf("%sall:search=%s:page=%d:limit=%d", categoryCachePrefix, url.QueryEscape(search), page, limit)
 	var cached categoryListCache
@@ -64,10 +64,10 @@ func (s *service) FindAll(search string, page int, limit int) ([]models.Category
 	return items, total, err
 }
 
-func (s *service) FindByID(id uint) (*models.Category, error) {
+func (s *service) FindByID(id uint) (*catalog.Category, error) {
 	ctx := context.Background()
 	key := fmt.Sprintf("%s%d", categoryCachePrefix, id)
-	var cached models.Category
+	var cached catalog.Category
 	if hit, err := s.cache.Get(ctx, key, &cached); err == nil && hit {
 		return &cached, nil
 	}
@@ -79,7 +79,7 @@ func (s *service) FindByID(id uint) (*models.Category, error) {
 	return result, err
 }
 
-func (s *service) Update(id uint, req UpdateCategoryRequest) (*models.Category, error) {
+func (s *service) Update(id uint, req UpdateCategoryRequest) (*catalog.Category, error) {
 
 	category, err := s.repository.FindByID(id)
 	if err != nil {
@@ -98,7 +98,7 @@ func (s *service) Update(id uint, req UpdateCategoryRequest) (*models.Category, 
 	return category, nil
 }
 
-func (s *service) Patch(id uint, req PatchCategoryRequest) (*models.Category, error) {
+func (s *service) Patch(id uint, req PatchCategoryRequest) (*catalog.Category, error) {
 
 	category, err := s.repository.FindByID(id)
 	if err != nil {

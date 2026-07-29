@@ -4,8 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/farrasmumtaz/RentVibe/internal/dto"
-	"github.com/farrasmumtaz/RentVibe/internal/models"
+	"github.com/farrasmumtaz/RentVibe/internal/catalog"
 	"github.com/farrasmumtaz/RentVibe/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +34,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 		return
 	}
 
-	item := models.Item{
+	item := catalog.Item{
 		Name:        req.Name,
 		Description: req.Description,
 		PricePerDay: req.PricePerDay,
@@ -48,7 +47,7 @@ func (h *Handler) Create(ctx *gin.Context) {
 		response.Error(ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
-	res := dto.ItemResponse{
+	res := Response{
 		ID:          item.ID,
 		CategoryID:  item.CategoryID,
 		Name:        item.Name,
@@ -90,10 +89,10 @@ func (h *Handler) FindAll(ctx *gin.Context) {
 		return
 	}
 
-	var result []dto.ItemResponse
+	result := make([]Response, 0, len(items))
 
 	for _, item := range items {
-		result = append(result, dto.ItemResponse{
+		result = append(result, Response{
 			ID:          item.ID,
 			CategoryID:  item.CategoryID,
 			Name:        item.Name,
@@ -125,10 +124,10 @@ func (h *Handler) FindByID(ctx *gin.Context) {
 		response.Error(ctx, http.StatusNotFound, "Barang tidak ditemukan")
 		return
 	}
-	var category dto.CategoryResponse
+	var category CategoryResponse
 
 	if item.Category != nil {
-		category = dto.CategoryResponse{
+		category = CategoryResponse{
 			ID:          item.Category.ID,
 			Name:        item.Category.Name,
 			Description: item.Category.Description,
@@ -137,7 +136,7 @@ func (h *Handler) FindByID(ctx *gin.Context) {
 		}
 	}
 
-	res := dto.ItemDetailResponse{
+	res := DetailResponse{
 		ID:          item.ID,
 		Name:        item.Name,
 		Description: item.Description,
@@ -171,7 +170,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 		return
 	}
 
-	item := models.Item{
+	item := catalog.Item{
 		Name:        req.Name,
 		Description: req.Description,
 		PricePerDay: req.PricePerDay,
@@ -185,7 +184,7 @@ func (h *Handler) Update(ctx *gin.Context) {
 		return
 	}
 
-	res := dto.ItemResponse{
+	res := Response{
 		ID:          item.ID,
 		CategoryID:  item.CategoryID,
 		Name:        item.Name,
@@ -225,7 +224,7 @@ func (h *Handler) Patch(ctx *gin.Context) {
 		return
 	}
 
-	res := dto.ItemResponse{
+	res := Response{
 		ID:          item.ID,
 		CategoryID:  item.CategoryID,
 		Name:        item.Name,

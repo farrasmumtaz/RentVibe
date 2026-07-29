@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/farrasmumtaz/RentVibe/internal/cache"
-	"github.com/farrasmumtaz/RentVibe/internal/models"
+	"github.com/farrasmumtaz/RentVibe/internal/catalog"
 )
 
 const (
@@ -16,16 +16,16 @@ const (
 )
 
 type itemListCache struct {
-	Items []models.Item `json:"items"`
-	Total int64         `json:"total"`
+	Items []catalog.Item `json:"items"`
+	Total int64          `json:"total"`
 }
 
 type Service interface {
-	Create(item *models.Item) error
-	FindAll(search string, page int, limit int) ([]models.Item, int64, error)
-	FindByID(id uint) (*models.Item, error)
-	Update(id uint, item *models.Item) error
-	Patch(id uint, req PatchItemRequest) (*models.Item, error)
+	Create(item *catalog.Item) error
+	FindAll(search string, page int, limit int) ([]catalog.Item, int64, error)
+	FindByID(id uint) (*catalog.Item, error)
+	Update(id uint, item *catalog.Item) error
+	Patch(id uint, req PatchItemRequest) (*catalog.Item, error)
 	Delete(id uint) error
 }
 
@@ -41,7 +41,7 @@ func NewService(repository Repository, cacheStore cache.Store) Service {
 	}
 }
 
-func (s *service) Create(item *models.Item) error {
+func (s *service) Create(item *catalog.Item) error {
 	if err := s.repository.Create(item); err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (s *service) Create(item *models.Item) error {
 	return nil
 }
 
-func (s *service) FindAll(search string, page int, limit int) ([]models.Item, int64, error) {
+func (s *service) FindAll(search string, page int, limit int) ([]catalog.Item, int64, error) {
 	ctx := context.Background()
 	key := fmt.Sprintf("%sall:search=%s:page=%d:limit=%d", itemCachePrefix, url.QueryEscape(search), page, limit)
 	var cached itemListCache
@@ -64,10 +64,10 @@ func (s *service) FindAll(search string, page int, limit int) ([]models.Item, in
 	return items, total, err
 }
 
-func (s *service) FindByID(id uint) (*models.Item, error) {
+func (s *service) FindByID(id uint) (*catalog.Item, error) {
 	ctx := context.Background()
 	key := fmt.Sprintf("%s%d", itemCachePrefix, id)
-	var cached models.Item
+	var cached catalog.Item
 	if hit, err := s.cache.Get(ctx, key, &cached); err == nil && hit {
 		return &cached, nil
 	}
@@ -79,7 +79,7 @@ func (s *service) FindByID(id uint) (*models.Item, error) {
 	return result, err
 }
 
-func (s *service) Update(id uint, item *models.Item) error {
+func (s *service) Update(id uint, item *catalog.Item) error {
 	if err := s.repository.Update(id, item); err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func (s *service) Update(id uint, item *models.Item) error {
 	return nil
 }
 
-func (s *service) Patch(id uint, req PatchItemRequest) (*models.Item, error) {
+func (s *service) Patch(id uint, req PatchItemRequest) (*catalog.Item, error) {
 	result, err := s.repository.Patch(id, req)
 	if err == nil {
 		s.invalidateCache()

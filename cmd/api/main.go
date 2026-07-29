@@ -11,6 +11,7 @@ import (
 
 	"github.com/farrasmumtaz/RentVibe/config"
 	"github.com/farrasmumtaz/RentVibe/internal/cache"
+	"github.com/farrasmumtaz/RentVibe/internal/migration"
 	"github.com/farrasmumtaz/RentVibe/internal/routes"
 )
 
@@ -19,6 +20,10 @@ func main() {
 	config.LoadEnv()
 
 	config.ConnectDatabase()
+	if err := migration.Run(); err != nil {
+		log.Fatal("Migration failed:", err)
+	}
+	log.Println("Database migration completed")
 
 	redisClient, err := config.ConnectRedis(context.Background())
 	var cacheStore cache.Store = cache.NewNopStore()
